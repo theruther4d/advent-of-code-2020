@@ -1,4 +1,4 @@
-import { evaluate } from "./index";
+import { evaluate, evaluateV2 } from "./index";
 import input from "./input.json";
 
 describe("Day 18", () => {
@@ -19,5 +19,9 @@ describe("Day 18", () => {
       return sum + evaluate(line);
     }, 0);
     expect(sumOfAllLines).toEqual(50956598240016);
+  });
+
+  it.only("evaluateV2", () => {
+    expect(evaluateV2("1 + 2 * 3 + 4 * 5 + 6")).toEqual(231);
   });
 });
