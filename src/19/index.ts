@@ -1,8 +1,7 @@
 export function validate(input: string, rules: Rule[]) {
-  function doValidate(input: string, rule: Rule, level: number) {
-    if (cache.get(rule)?.has(input)) {
-      return cache.get(rule).get(input);
-    }
+  function doValidate(input: string, rule: Rule) {
+    if (cache.get(rule)?.has(input)) cache.get(rule).get(input);
+
     if (isChar(rule)) {
       const result = {
         valid: input.startsWith(rule),
@@ -16,9 +15,9 @@ export function validate(input: string, rules: Rule[]) {
       let valid = false;
       let nextInput = input;
 
-      for (let subRuleNo = 0; subRuleNo < rule.length; subRuleNo++) {
-        const subRule = rules[rule[subRuleNo]];
-        const result = doValidate(nextInput, subRule, level + 1);
+      for (let ruleNo = 0; ruleNo < rule.length; ruleNo++) {
+        const subRule = rules[rule[ruleNo]];
+        const result = doValidate(nextInput, subRule);
 
         if (result.valid) {
           valid = true;
@@ -40,7 +39,7 @@ export function validate(input: string, rules: Rule[]) {
     let nextInput = input;
     for (let groupNo = 0; groupNo < rule.length; groupNo++) {
       const subRule = rule[groupNo];
-      const result = doValidate(input, subRule, level + 1);
+      const result = doValidate(input, subRule);
 
       if (result.valid) {
         valid = true;
@@ -51,10 +50,11 @@ export function validate(input: string, rules: Rule[]) {
 
     const result = { valid, input: nextInput };
     addToCache(rule, input, result);
+
     return result;
   }
 
-  const { valid, input: nextInput } = doValidate(input, rules[0], 0);
+  const { valid, input: nextInput } = doValidate(input, rules[0]);
   return valid && !nextInput.length;
 }
 
@@ -87,6 +87,7 @@ function makeRule(input: string): Rule {
       return makeRule(subGroup);
     }) as Pipe;
   }
+
   // Subgroup
   if (/[\d+\s]/.test(input)) {
     return input.trim().split(" ").map(Number) as SubRule;
@@ -104,6 +105,7 @@ export function parsePuzzleInput(input: string) {
   const [rawRules, rawMessages] = input.split(/\n\n/);
   const messages = rawMessages.split(/\n/);
   let rules = new Array<Rule>();
+
   rawRules
     .trim()
     .split(/\n/)
